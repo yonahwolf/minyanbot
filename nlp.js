@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
-const SYSTEM = `You extract prayer-time queries from WhatsApp messages sent to a synagogue bot.
+const QUERY_SYSTEM = `You extract prayer-time queries from WhatsApp messages sent to a synagogue bot.
 
 Return ONLY valid JSON with two fields:
   "service": one of "shacharit" | "mincha" | "maariv" | "havdala" | "all" | null
@@ -19,20 +19,50 @@ Rules:
 
 Today (Eastern Time): DATE_PLACEHOLDER`;
 
-export async function parseQuestion(text, todayET) {
-  const system = SYSTEM.replace('DATE_PLACEHOLDER', todayET);
+const OVERRIDE_SYSTEM = `You parse admin override commands for a synagogue WhatsApp bot.
 
+Return ONLY valid JSON:
+{
+  "action": "set" | "clear" | "list" | null,
+  "service": "shacharit" | "mincha" | "maariv" | "havdala" | null,
+  "date": "YYYY-MM-DD" | null,
+  "time": "H:MM AM/PM" | null,
+  "note": "short note to append" | null
+}
+
+- "set": admin is setting a custom time. Examples: "set mincha on 4/21 to 7:15 PM", "mincha friday is 7pm", "change shacharit tomorrow to 8am"
+- "clear": admin is removing an override. Examples: "clear mincha on 4/21", "remove override for tomorrow's shacharit"
+- "list": admin wants to see all saved overrides. Examples: "show overrides", "list overrides", "what overrides are set"
+- null: not an override command (a regular time query or unrelated message)
+
+Normalize the time to "H:MM AM" or "H:MM PM" format (e.g. "7:15 PM", "8:00 AM").
+
+Today (Eastern Time): DATE_PLACEHOLDER`;
+
+function stripFences(text) {
+  return text.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+}
+
+async function callClaude(system, text, todayET) {
   const msg = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 64,
-    system,
+    max_tokens: 128,
+    system: system.replace('DATE_PLACEHOLDER', todayET),
     messages: [{ role: 'user', content: text }],
   });
-
   try {
-    const raw = msg.content[0].text.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '');
-    return JSON.parse(raw);
+    return JSON.parse(stripFences(msg.content[0].text));
   } catch {
-    return { service: null, date: null };
+    return null;
   }
+}
+
+export async function parseQuestion(text, todayET) {
+  const result = await callClaude(QUERY_SYSTEM, text, todayET);
+  return result ?? { service: null, date: null };
+}
+
+export async function parseOverrideCommand(text, todayET) {
+  const result = await callClaude(OVERRIDE_SYSTEM, text, todayET);
+  return result ?? { action: null };
 }
