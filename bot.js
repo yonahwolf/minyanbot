@@ -164,10 +164,15 @@ async function handleMessage(text, msg) {
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
-  const { version } = await fetchLatestBaileysVersion();
+  let version;
+  try {
+    ({ version } = await fetchLatestBaileysVersion());
+  } catch {
+    console.log('Could not fetch latest Baileys version, using bundled default.');
+  }
 
   const sock = makeWASocket({
-    version,
+    ...(version ? { version } : {}),
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
