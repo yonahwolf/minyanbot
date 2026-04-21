@@ -1,0 +1,19 @@
+{
+  "name": "minyanbot",
+  "version": "1.0.0",
+  "description": "WhatsApp bot that answers natural-language questions about synagogue prayer times",
+  "type": "module",
+  "main": "bot.js",
+  "scripts": {
+    "start": "TZ=America/New_York node bot.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "gray-matter": "^4.0.3",
+    "pino": "^9.0.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
