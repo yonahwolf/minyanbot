@@ -8,12 +8,12 @@
     "start": "TZ=America/New_York node bot.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@whiskeysockets/baileys": "^6.7.18",
-    "axios": "^1.7.0",
-    "dotenv": "^16.4.0",
-    "gray-matter": "^4.0.3",
-    "pino": "^9.0.0",
-    "qrcode-terminal": "^0.12.0"
+    "@anthropic-ai/sdk": "0.39.0",
+    "@whiskeysockets/baileys": "6.7.21",
+    "axios": "1.15.1",
+    "dotenv": "16.6.1",
+    "gray-matter": "4.0.3",
+    "pino": "9.14.0",
+    "qrcode-terminal": "0.12.0"
   }
 }
