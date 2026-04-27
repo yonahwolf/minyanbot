@@ -196,11 +196,16 @@ async function connectToWhatsApp() {
     }
   });
 
+  const seen = new Set();
+
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
 
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
+      if (seen.has(msg.key.id)) continue;
+      seen.add(msg.key.id);
+      if (seen.size > 500) seen.delete(seen.values().next().value);
 
       const text =
         msg.message.conversation ||
