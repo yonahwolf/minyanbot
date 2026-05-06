@@ -135,15 +135,25 @@ export async function getMincha(date) {
     const cl = await getCandleLighting(date);
     const candidate = addMinutes(cl, cfg.friday.after_candle_lighting_minutes);
     let minchaTime = candidate;
+    let capped = false;
 
     if (cfg.friday.latest_time) {
       const cap = parseHM(cfg.friday.latest_time);
       if (isAfterWallTime(candidate, cap.hours, cap.minutes)) {
         minchaTime = wallTimeOnDate(date, cap.hours, cap.minutes);
+        capped = true;
       }
     }
 
-    return { times: [formatTime(minchaTime)], note: cfg.friday.note || null };
+    const times = [formatTime(minchaTime)];
+
+    if (capped && cfg.friday.shkiah_mincha_minutes_before_sunset) {
+      const sunset = await getSunset(date);
+      const shkiahTime = subtractMinutes(sunset, cfg.friday.shkiah_mincha_minutes_before_sunset);
+      times.push(`${formatTime(shkiahTime)} (Shkiah Mincha)`);
+    }
+
+    return { times, note: cfg.friday.note || null };
   }
 
   // Sun–Thu: use Sunday's sunset for the whole week

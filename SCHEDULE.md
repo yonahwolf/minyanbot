@@ -43,6 +43,8 @@ mincha:
     after_candle_lighting_minutes: 10
     # Never schedule later than this (null = no cap)
     latest_time: "7:00 PM"
+    # When cap is in effect, add a second service this many minutes before sunset (null = disabled)
+    shkiah_mincha_minutes_before_sunset: 8
     note: "followed by Kabbalat Shabbat & Maariv"
 
   shabbat:
@@ -104,7 +106,8 @@ Independence Day, Labor Day, Thanksgiving, Christmas Day.
 Maariv follows immediately after Mincha.
 
 **Friday:** Candle lighting time + 10 minutes, capped at 7:00 PM.
-Followed by Kabbalat Shabbat & Maariv.
+When the cap is in effect, a second Shkiah Mincha service is added 8 minutes before sunset.
+Both services are followed by Kabbalat Shabbat & Maariv.
 
 **Shabbat:** Shabbat Mincha is davened at the same time as Friday's candle lighting.
 
