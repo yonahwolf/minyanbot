@@ -5,6 +5,7 @@ import pino from 'pino';
 import qrcode from 'qrcode-terminal';
 import { parseQuestion, parseOverrideCommand } from './nlp.js';
 import { getShacharit, getMincha, getMaariv, getHavdala } from './times.js';
+import { getJewishHoliday } from './zmanim.js';
 import { getOverride, setOverride, clearOverride, listOverrides } from './overrides.js';
 
 const TZ = 'America/New_York';
@@ -45,6 +46,12 @@ function localDate(dateStr) {
 async function buildReply(service, dateStr) {
   const date = localDate(dateStr);
   const label = dateLabel(dateStr);
+
+  const holiday = await getJewishHoliday(date);
+  if (holiday) {
+    return `*${label}* is ${holiday.title}. We're working on adding Holiday information to our bot — for now, check the shul's e-mails! 🙏`;
+  }
+
   const lines = [`*${label}*`];
 
   const add = (name, times, note) => {
