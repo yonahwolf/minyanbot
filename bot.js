@@ -81,14 +81,15 @@ async function buildReply(service, dateStr) {
     await resolve('shacharit', () => ({ times: getShacharit(date) }), 'Shacharit');
   }
   const wantsMincha = service === 'mincha' || service === 'all';
-  // Sun–Thu Maariv simply follows Mincha, so show them as one line (unless either is overridden)
-  const isWeekday = date.getDay() <= 4;
-  const combine = (wantsMincha || service === 'maariv') && isWeekday
+  // Maariv follows Mincha on Sun–Fri, so show them as one line (unless either is overridden)
+  const dow = date.getDay();
+  const combine = (wantsMincha || service === 'maariv') && dow <= 5
     && !getOverride(dateStr, 'mincha') && !getOverride(dateStr, 'maariv');
 
   if (combine) {
     const r = await getMincha(date);
-    add('Mincha followed by Maariv', r.times, null);
+    const name = dow === 5 ? "Mincha followed by Kabbalat Shabbat and Ma'ariv" : 'Mincha followed by Maariv';
+    add(name, r.times, null);
   } else {
     if (wantsMincha) {
       await resolve('mincha', () => getMincha(date), 'Mincha');
