@@ -32,10 +32,10 @@ function dowET(date) {
   return new Date(date.toLocaleString('en-US', { timeZone: TZ })).getDay();
 }
 
-// Return the Sunday of the same week as `date` (midnight UTC of that Sunday)
+// Return the Sunday of the same week as `date` (noon UTC of that Sunday)
 function sundayOfWeek(date) {
   const localStr = date.toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
-  const d = new Date(localStr); // midnight UTC
+  const d = new Date(`${localStr}T12:00:00Z`); // noon UTC, so TZ conversion stays on the same calendar day
   d.setUTCDate(d.getUTCDate() - d.getUTCDay());
   return d;
 }
@@ -45,6 +45,14 @@ function fridayOfWeek(date) {
   const d = sundayOfWeek(date);
   d.setUTCDate(d.getUTCDate() + 5);
   return d;
+}
+
+// Minutes since local midnight in TZ
+function minutesOfDay(date) {
+  const [h, m] = date
+    .toLocaleTimeString('en-US', { timeZone: TZ, hour12: false, hour: '2-digit', minute: '2-digit' })
+    .split(':').map(Number);
+  return h * 60 + m;
 }
 
 // Parse a config time string like "7:00 PM" into { hours, minutes } (24h)
@@ -156,9 +164,12 @@ export async function getMincha(date) {
     return { times, note: cfg.friday.note || null };
   }
 
-  // Sun–Thu: use Sunday's sunset for the whole week
+  // Sun–Thu: use the earliest sunset (by time of day) from Sun–Thu of this week
   const sunday = sundayOfWeek(date);
-  const sunset = await getSunset(sunday);
+  const sunsets = await Promise.all(
+    [0, 1, 2, 3, 4].map(i => getSunset(addMinutes(sunday, i * 24 * 60)))
+  );
+  const sunset = sunsets.reduce((a, b) => (minutesOfDay(b) < minutesOfDay(a) ? b : a));
   const raw = subtractMinutes(sunset, cfg.weekday.subtract_minutes);
   const mincha = roundUpTo(raw, cfg.weekday.round_up_minutes);
   return { times: [formatTime(mincha)], note: 'followed by Maariv' };

@@ -33,7 +33,7 @@ shacharit:
 # ──────────────────────────────────────────────────────────────────────────────
 mincha:
   weekday:
-    # Take Sunday's sunset, subtract this many minutes, then round UP to the
+    # Take the earliest Sun–Thu sunset of the week, subtract this many minutes, then round UP to the
     # nearest `round_up_minutes`. Same time applies Sun–Thu all week.
     subtract_minutes: 10
     round_up_minutes: 5
@@ -98,7 +98,7 @@ Independence Day, Labor Day, Thanksgiving, Christmas Day.
 
 ## Mincha
 
-**Sunday–Thursday:** Find Sunday's sunset, subtract 10 minutes, round *up* to the nearest
+**Sunday–Thursday:** Find the earliest sunset of Sunday–Thursday that week, subtract 10 minutes, round *up* to the nearest
 5-minute mark. That time holds for the entire week (Sun–Thu).
 
 > Example: sunset 7:42 PM → 7:42 − 10 = 7:32 → round up → **7:35 PM**
