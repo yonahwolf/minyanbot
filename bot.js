@@ -80,11 +80,22 @@ async function buildReply(service, dateStr) {
   if (service === 'shacharit' || service === 'all') {
     await resolve('shacharit', () => ({ times: getShacharit(date) }), 'Shacharit');
   }
-  if (service === 'mincha' || service === 'all') {
-    await resolve('mincha', () => getMincha(date), 'Mincha');
-  }
-  if (service === 'maariv' || service === 'all') {
-    await resolve('maariv', () => getMaariv(date), "Ma'ariv");
+  const wantsMincha = service === 'mincha' || service === 'all';
+  // Sun–Thu Maariv simply follows Mincha, so show them as one line (unless either is overridden)
+  const isWeekday = date.getDay() <= 4;
+  const combine = (wantsMincha || service === 'maariv') && isWeekday
+    && !getOverride(dateStr, 'mincha') && !getOverride(dateStr, 'maariv');
+
+  if (combine) {
+    const r = await getMincha(date);
+    add('Mincha followed by Maariv', r.times, null);
+  } else {
+    if (wantsMincha) {
+      await resolve('mincha', () => getMincha(date), 'Mincha');
+    }
+    if (service === 'maariv' || service === 'all') {
+      await resolve('maariv', () => getMaariv(date), "Ma'ariv");
+    }
   }
   if (service === 'havdala' || service === 'all') {
     const override = getOverride(dateStr, 'havdala');
